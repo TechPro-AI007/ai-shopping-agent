@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent-blue: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+
+    body {
+      width: 350px;
+      margin: 0;
+      padding: 14px;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-sizing: border-box;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .header-title {
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid #334155;
+    }
+
+    .card-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      color: var(--text-main);
+      box-sizing: border-box;
+      margin: 8px 0;
+      font-size: 12px;
+    }
+
+    .hidden { display: none !important; }
+
+    .verdict-banner {
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .verdict-MUST-BUY { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+    .verdict-WAIT-FOR-DISCOUNT { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .verdict-SKIP { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+    .score-pill {
+      background: rgba(0,0,0,0.4);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .pros-cons-grid { font-size: 12px; }
+    .pro-item { color: #4ade80; margin-bottom: 4px; }
+    .con-item { color: #f87171; margin-bottom: 4px; }
+    .pro-item::before { content: "👍 "; }
+    .con-item::before { content: "👎 "; }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <div class="header-title">🛒 ShopBot AI <span style="font-size:10px; color:var(--accent-blue);">v2.0</span></div>
+    <button id="toggleSettingsBtn" class="icon-btn" title="Settings">⚙️</button>
+  </div>
+
+  <!-- Settings Panel -->
+  <div id="settingsPanel" class="card hidden">
+    <div class="card-title">Gemini API Setup</div>
+    <label style="font-size: 11px; color: var(--text-muted);">API Key:</label>
+    <input type="password" id="apiKeyInput" placeholder="Paste key from Google AI Studio..." />
+    <button id="saveKeyBtn" class="btn-primary" style="padding: 6px; font-size:12px;">Save API Key</button>
+    <div id="saveStatus" style="font-size: 11px; margin-top: 6px; color: var(--success);"></div>
+  </div>
+
+  <!-- Main View -->
+  <div id="mainView">
+    <button id="analyzeBtn" class="btn-primary">
+      <span id="btnText">Analyze Product Page</span>
+      <span id="btnSpinner" class="hidden">⏳ Capturing & Analyzing...</span>
+    </button>
+  </div>
+
+  <!-- Output Display Container -->
+  <div id="resultContainer"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "ShopBot AI v2",
+  "version": "2.0",
+  "description": "Smart E-Commerce Visual & Structural Assistant powered by Google Gemini",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+"<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

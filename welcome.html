@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopBot AI v2.1 — Privacy-First E-Commerce Co-Pilot</title>
+<meta name="description" content="Analyze real customer reviews, spot hidden fees, and evaluate product listings in one click. 100% free, open-source, and serverless — powered by your own Google Gemini API key.">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #0b0f19;
+    --panel: rgba(255,255,255,0.045);
+    --panel-border: rgba(255,255,255,0.09);
+    --indigo: #6366f1;
+    --violet: #a855f7;
+    --mint: #34d399;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:
+      radial-gradient(ellipse 900px 520px at 10% -8%, rgba(99,102,241,0.18), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 90% 10%, rgba(168,85,247,0.15), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 50% 100%, rgba(99,102,241,0.08), transparent 60%),
+      var(--bg);
+    color:#e7ebf5;
+    font-family:'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .font-display{ font-family:'Space Grotesk', sans-serif; }
+  .font-mono{ font-family:'JetBrains Mono', monospace; }
+
+  .glass{
+    background: var(--panel);
+    border:1px solid var(--panel-border);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .grad-text{
+    background: linear-gradient(100deg, #93a9ff 0%, #c084fc 55%, #e0aaff 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .btn-primary{
+    background: linear-gradient(100deg, var(--indigo), var(--violet));
+    box-shadow: 0 8px 30px -8px rgba(139,92,246,0.55);
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  .btn-primary:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px -8px rgba(139,92,246,0.75);
+    filter: brightness(1.08);
+  }
+  .btn-secondary{ transition: all .25s ease; }
+  .btn-secondary:hover{
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.28);
+    transform: translateY(-2px);
+  }
+  .feature-card{ transition: transform .35s ease, border-color .35s ease, background .35s ease; }
+  .feature-card:hover{
+    transform: translateY(-4px);
+    border-color: rgba(168,85,247,0.4);
+    background: rgba(255,255,255,0.07);
+  }
+  .badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.02em;
+  }
+  .step-line{
+    background: linear-gradient(180deg, var(--indigo), var(--violet) 60%, transparent);
+  }
+  .reveal{
+    opacity:0;
+    transform: translateY(22px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .reveal.show{ opacity:1; transform:none; }
+  .glow-dot{ box-shadow: 0 0 12px 2px currentColor; }
+  ::selection{ background: rgba(139,92,246,0.35); }
+
+  .mock-window{
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .scanline{
+    background: linear-gradient(180deg, transparent, rgba(99,102,241,0.55), transparent);
+    animation: scan 3.2s linear infinite;
+  }
+  @keyframes scan{
+    0%{ transform: translateY(-10%); opacity:0; }
+    10%{ opacity:1; }
+    90%{ opacity:1; }
+    100%{ transform: translateY(220%); opacity:0; }
+  }
+  @keyframes floaty{
+    0%,100%{ transform: translateY(0px); }
+    50%{ transform: translateY(-10px); }
+  }
+  .float{ animation: floaty 6s ease-in-out infinite; }
+
+  a:focus-visible, button:focus-visible{
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .float, .scanline{ animation: none; }
+    .reveal{ transition:none; opacity:1; transform:none; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- NAV -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="max-w-6xl mx-auto px-6 py-4 mt-3">
+    <div class="glass rounded-2xl px-5 py-3 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2 font-display font-semibold text-[15px] tracking-tight">
+        <span class="inline-flex h-7 w-7 rounded-lg items-center justify-center text-xs font-mono"
+              style="background:linear-gradient(135deg,var(--indigo),var(--violet));">SB</span>
+        ShopBot <span class="grad-text">AI</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-7 text-sm text-slate-300">
+        <a href="#features" class="hover:text-white transition-colors">Features</a>
+        <a href="#how-it-works" class="hover:text-white transition-colors">Setup</a>
+        <a href="#privacy" class="hover:text-white transition-colors">Privacy</a>
+        <a href="https://github.com/TechPro-AI007/ai-shopping-agent" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+      </nav>
+      <a href="https://github.com/TechPro-AI007/ai-shopping-agent/releases/tag/v2.1" target="_blank" rel="noopener"
+         class="btn-primary hidden sm:inline-flex text-sm font-medium text-white px-4 py-2 rounded-xl">
+        Download
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="top" class="relative pt-40 pb-24 px-6">
+  <div class="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center">
+    <div>
+      <div class="flex flex-wrap gap-2 mb-6 reveal show">
+        <span class="badge glass rounded-full px-3 py-1.5 inline-flex items-center gap-1.5 text-slate-200">
+          <span class="h-1.5 w-1.5 rounded-full glow-dot" style="color:#818cf8;background:#818cf8;"></span>
+          Chrome Extension v2.1
+        </span>
+        <span class="badge glass rounded-full px-3 py-1.5 inline-flex items-center gap-1.5 text-slate-200">
+          <span class="h-1.5 w-1.5 rounded-full glow-dot" style="color:#c084fc;background:#c084fc;"></span>
+          Powered by Gemini
+        </span>
+        <span class="badge glass rounded-full px-3 py-1.5 inline-flex items-center gap-1.5 text-slate-200">
+          <span class="h-1.5 w-1.5 rounded-full glow-dot" style="color:#34d399;background:#34d399;"></span>
+          Open Source · MIT
+        </span>
+      </div>
+
+      <h1 class="font-display font-semibold text-[2.5rem] sm:text-5xl lg:text-[3.4rem] leading-[1.08] tracking-tight reveal show">
+        Your Smart, <span class="grad-text">Privacy-First</span><br class="hidden sm:block">
+        E-Commerce Co-Pilot,<br class="hidden sm:block">
+        Powered by Google Gemini
+      </h1>
+
+      <p class="mt-6 text-lg text-slate-400 max-w-lg leading-relaxed reveal show">
+        Analyze real customer reviews, spot hidden fees, and evaluate product listings in one click —
+        <span class="text-slate-200 font-medium">100% free &amp; serverless.</span>
+      </p>
+
+      <div class="mt-9 flex flex-col sm:flex-row gap-3 reveal show">
+        <a href="https://github.com/TechPro-AI007/ai-shopping-agent/releases/tag/v2.1" target="_blank" rel="noopener"
+           class="btn-primary text-white font-semibold px-6 py-3.5 rounded-xl inline-flex items-center justify-center gap-2">
+          <i data-lucide="download" class="h-[18px] w-[18px]"></i>
+          Download Extension (.zip)
+        </a>
+        <a href="https://youtu.be/8SurGjHwoLU" target="_blank" rel="noopener"
+           class="btn-secondary glass text-slate-100 font-medium px-6 py-3.5 rounded-xl inline-flex items-center justify-center gap-2">
+          <i data-lucide="play" class="h-[18px] w-[18px]"></i>
+          Watch 12s Demo
+        </a>
+      </div>
+
+      <p class="mt-5 text-xs font-mono text-slate-500 reveal show">
+        no signup · no telemetry · your API key never leaves your browser
+      </p>
+    </div>
+
+    <!-- Signature element: mock extension popup analyzing a live listing -->
+    <div class="relative reveal show">
+      <div class="absolute -inset-10 -z-10 opacity-60 blur-3xl"
+           style="background:radial-gradient(circle at 30% 30%, rgba(99,102,241,0.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(168,85,247,0.3), transparent 60%);"></div>
+
+      <div class="mock-window float rounded-2xl overflow-hidden glass max-w-sm mx-auto">
+        <div class="flex items-center gap-1.5 px-4 py-3 border-b border-white/10 bg-black/20">
+          <span class="h-2.5 w-2.5 rounded-full bg-red-400/70"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-yellow-400/70"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-green-400/70"></span>
+          <span class="ml-3 font-mono text-[11px] text-slate-400">shopbot-ai — analyzing listing…</span>
+        </div>
+        <div class="relative p-5 space-y-4">
+          <div class="scanline absolute left-0 right-0 h-16 opacity-40 pointer-events-none"></div>
+
+          <div class="flex items-center justify-between">
+            <span class="font-display font-semibold text-sm">Wireless Earbuds Pro X2</span>
+            <span class="badge px-2 py-1 rounded-md" style="background:rgba(52,211,153,0.14);color:#4ade80;">TRUST 82/100</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+              <p class="text-[11px] text-slate-400 mb-1">Genuine sentiment</p>
+              <p class="font-mono text-lg font-semibold text-slate-100">73% <span class="text-emerald-400 text-xs">positive</span></p>
+            </div>
+            <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+              <p class="text-[11px] text-slate-400 mb-1">Common defect</p>
+              <p class="text-xs text-slate-200 leading-snug">Left bud battery drain after 3 months</p>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3 flex items-start gap-2">
+            <i data-lucide="triangle-alert" class="shrink-0 mt-0.5 h-[15px] w-[15px] text-amber-400"></i>
+            <p class="text-xs text-amber-200/90 leading-snug"><span class="font-semibold">Seller trap detected:</span> $6.99 "handling fee" added at checkout, non-returnable after 7 days.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="py-24 px-6 border-t border-white/5">
+  <div class="max-w-6xl mx-auto">
+    <div class="max-w-xl mb-14 reveal">
+      <p class="font-mono text-xs text-[color:var(--mint)] mb-3 tracking-wide">WHY YOU NEED IT</p>
+      <h2 class="font-display font-semibold text-3xl sm:text-4xl tracking-tight">Shopping online is a trust exercise. <span class="grad-text">Stop guessing.</span></h2>
+      <p class="mt-4 text-slate-400 leading-relaxed">Listings are optimized to sell, not to inform. ShopBot AI reads the page the way a skeptical friend would — before you click "Buy Now."</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-5">
+
+      <div class="feature-card glass rounded-2xl p-6 reveal">
+        <div class="h-11 w-11 rounded-xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.2));">
+          <i data-lucide="layers" class="h-[22px] w-[22px] text-indigo-300"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Dual-Layer Multimodal AI</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Reads visual screenshots and page metadata directly off your screen — combining what you <em>see</em> with what the page actually says.</p>
+      </div>
+
+      <div class="feature-card glass rounded-2xl p-6 reveal">
+        <div class="h-11 w-11 rounded-xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.2));">
+          <i data-lucide="message-square-quote" class="h-[22px] w-[22px] text-violet-300"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Real Review &amp; Sentiment Scraper</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Cuts through fake and templated reviews to surface genuine customer pros, cons, and recurring product defects.</p>
+      </div>
+
+      <div class="feature-card glass rounded-2xl p-6 reveal">
+        <div class="h-11 w-11 rounded-xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.2));">
+          <i data-lucide="shield-alert" class="h-[22px] w-[22px] text-purple-300"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">Seller Trap &amp; Fee Detector</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Flags hidden handling fees, non-returnable policies, and short return windows before you check out — not after.</p>
+      </div>
+
+      <div class="feature-card glass rounded-2xl p-6 reveal">
+        <div class="h-11 w-11 rounded-xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(52,211,153,0.2),rgba(99,102,241,0.2));">
+          <i data-lucide="server-off" class="h-[22px] w-[22px] text-emerald-300"></i>
+        </div>
+        <h3 class="font-display font-semibold text-lg mb-2">100% Free &amp; Serverless</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Connects directly from your browser to Google Gemini using your own free API key. Zero tracking, zero middleman servers.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="py-24 px-6 border-t border-white/5">
+  <div class="max-w-6xl mx-auto">
+    <div class="max-w-xl mb-16 reveal">
+      <p class="font-mono text-xs text-[color:var(--indigo)] mb-3 tracking-wide">HOW IT WORKS</p>
+      <h2 class="font-display font-semibold text-3xl sm:text-4xl tracking-tight">Four steps. No coding required.</h2>
+      <p class="mt-4 text-slate-400 leading-relaxed">Since ShopBot AI isn't on the Chrome Web Store yet, you'll load it manually — it takes about two minutes.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-[auto_1fr] gap-x-10">
+      <div class="hidden lg:flex flex-col items-center">
+        <div class="w-px flex-1 step-line"></div>
+      </div>
+
+      <div class="space-y-10">
+
+        <div class="reveal grid grid-cols-[3rem_1fr] gap-5 items-start">
+          <div class="glass rounded-xl h-12 w-12 flex items-center justify-center font-mono font-semibold text-lg grad-text">01</div>
+          <div class="glass rounded-2xl p-5">
+            <h3 class="font-display font-semibold text-lg mb-1.5">Download &amp; unzip</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Download the release file from GitHub and unzip the folder anywhere on your PC.</p>
+          </div>
+        </div>
+
+        <div class="reveal grid grid-cols-[3rem_1fr] gap-5 items-start">
+          <div class="glass rounded-xl h-12 w-12 flex items-center justify-center font-mono font-semibold text-lg grad-text">02</div>
+          <div class="glass rounded-2xl p-5">
+            <h3 class="font-display font-semibold text-lg mb-1.5">Open Chrome extensions</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">In Chrome, go to <code class="font-mono text-xs px-1.5 py-0.5 rounded bg-white/10 text-slate-200">chrome://extensions/</code> and toggle on <span class="text-slate-200">"Developer mode"</span> in the top right.</p>
+          </div>
+        </div>
+
+        <div class="reveal grid grid-cols-[3rem_1fr] gap-5 items-start">
+          <div class="glass rounded-xl h-12 w-12 flex items-center justify-center font-mono font-semibold text-lg grad-text">03</div>
+          <div class="glass rounded-2xl p-5">
+            <h3 class="font-display font-semibold text-lg mb-1.5">Load unpacked</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Click <span class="text-slate-200">"Load unpacked"</span> in the top left and select your unzipped folder.</p>
+          </div>
+        </div>
+
+        <div class="reveal grid grid-cols-[3rem_1fr] gap-5 items-start">
+          <div class="glass rounded-xl h-12 w-12 flex items-center justify-center font-mono font-semibold text-lg grad-text">04</div>
+          <div class="glass rounded-2xl p-5">
+            <h3 class="font-display font-semibold text-lg mb-1.5">Add your free API key</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Click the ShopBot AI icon, paste your free Google Gemini API key — grab one at
+              <a href="https://aistudio.google.com/" target="_blank" rel="noopener" class="text-[color:var(--indigo)] hover:underline">aistudio.google.com</a> —
+              and click Save.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="mt-12 flex justify-center reveal">
+      <a href="https://github.com/TechPro-AI007/ai-shopping-agent/releases/tag/v2.1" target="_blank" rel="noopener"
+         class="btn-primary text-white font-semibold px-6 py-3.5 rounded-xl inline-flex items-center gap-2">
+        <i data-lucide="download" class="h-[18px] w-[18px]"></i>
+        Download Extension (.zip)
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy" class="py-24 px-6 border-t border-white/5">
+  <div class="max-w-4xl mx-auto">
+    <div class="glass rounded-3xl p-8 sm:p-12 relative overflow-hidden reveal">
+      <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl opacity-40" style="background:radial-gradient(circle, rgba(52,211,153,0.5), transparent 70%);"></div>
+
+      <div class="relative flex items-start gap-5">
+        <div class="hidden sm:flex shrink-0 h-14 w-14 rounded-2xl items-center justify-center" style="background:rgba(52,211,153,0.14);">
+          <i data-lucide="shield-check" class="h-[26px] w-[26px] text-emerald-400"></i>
+        </div>
+        <div>
+          <p class="font-mono text-xs text-emerald-400 mb-2 tracking-wide">PRIVACY &amp; SECURITY GUARANTEE</p>
+          <h2 class="font-display font-semibold text-2xl sm:text-3xl tracking-tight mb-4">Everything stays on your device. Full stop.</h2>
+          <p class="text-slate-400 leading-relaxed mb-5">
+            Your Gemini API key and all analysis data are stored in <span class="text-slate-200">Chrome's local storage</span> — not on our servers, because we don't have any.
+            ShopBot AI talks directly to Google's Gemini API from your machine. No personal data, shopping activity, or browsing history is collected, logged, or sent to any third party.
+          </p>
+          <div class="grid sm:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p class="text-sm font-medium text-slate-100 mb-1">No middleman servers</p>
+              <p class="text-xs text-slate-500 leading-relaxed">Browser → Google Gemini, directly. We never sit in between.</p>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p class="text-sm font-medium text-slate-100 mb-1">No tracking</p>
+              <p class="text-xs text-slate-500 leading-relaxed">No analytics, no telemetry, no hidden calls home.</p>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p class="text-sm font-medium text-slate-100 mb-1">Fully auditable</p>
+              <p class="text-xs text-slate-500 leading-relaxed">Every line of code is open source on GitHub — check it yourself.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="py-24 px-6 border-t border-white/5">
+  <div class="max-w-3xl mx-auto text-center reveal">
+    <h2 class="font-display font-semibold text-3xl sm:text-4xl tracking-tight mb-4">Shop smarter in the next two minutes.</h2>
+    <p class="text-slate-400 mb-8">Free forever. Open source. Runs entirely in your browser.</p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="https://github.com/TechPro-AI007/ai-shopping-agent/releases/tag/v2.1" target="_blank" rel="noopener"
+         class="btn-primary text-white font-semibold px-6 py-3.5 rounded-xl inline-flex items-center justify-center gap-2">
+        <i data-lucide="download" class="h-[18px] w-[18px]"></i>
+        Download Extension (.zip)
+      </a>
+      <a href="https://github.com/TechPro-AI007/ai-shopping-agent" target="_blank" rel="noopener"
+         class="btn-secondary glass text-slate-100 font-medium px-6 py-3.5 rounded-xl inline-flex items-center justify-center gap-2">
+        <i data-lucide="github" class="h-[18px] w-[18px]"></i>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/5 py-10 px-6">
+  <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2 font-display font-semibold text-sm">
+      <span class="inline-flex h-6 w-6 rounded-md items-center justify-center text-[10px] font-mono" style="background:linear-gradient(135deg,var(--indigo),var(--violet));">SB</span>
+      ShopBot AI <span class="text-slate-500 font-mono text-xs font-normal">v2.1</span>
+    </div>
+    <div class="flex items-center gap-6 text-sm text-slate-400 font-mono">
+      <a href="https://github.com/TechPro-AI007/ai-shopping-agent" target="_blank" rel="noopener" class="hover:text-white transition-colors inline-flex items-center gap-1.5">
+        <i data-lucide="github" class="h-4 w-4"></i> GitHub
+      </a>
+      <a href="https://github.com/TechPro-AI007/ai-shopping-agent/blob/main/LICENSE" target="_blank" rel="noopener" class="hover:text-white transition-colors inline-flex items-center gap-1.5">
+        <i data-lucide="scale" class="h-4 w-4"></i> MIT License
+      </a>
+      <a href="https://github.com/TechPro-AI007" target="_blank" rel="noopener" class="hover:text-white transition-colors inline-flex items-center gap-1.5">
+        <i data-lucide="user" class="h-4 w-4"></i> Developer
+      </a>
+    </div>
+  </div>
+  <p class="max-w-6xl mx-auto mt-6 text-xs text-slate-600">Not affiliated with Google. Gemini is a trademark of Google LLC.</p>
+</footer>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('show');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+</script>
+</body>
+</html>

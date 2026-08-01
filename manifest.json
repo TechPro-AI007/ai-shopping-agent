@@ -9,15 +9,32 @@
     "storage"
   ],
   "host_permissions": [
-"<all_urls>"
+    "<all_urls>"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "welcome.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
